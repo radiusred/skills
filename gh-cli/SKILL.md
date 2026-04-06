@@ -1,3 +1,11 @@
+---
+name: gh-cli
+description: This skill enables an agent to perform GitHub operations using the `gh` CLI by authenticating as a **GitHub App Installation**. This is more secure and scalable than using a Personal Access Token (PAT).
+license: MIT
+metadata:
+  author: radiusred.uk
+--- 
+
 # SKILL: Authenticating GitHub CLI (`gh`) via GitHub App
 
 This skill enables an agent to perform GitHub operations using the `gh` CLI by authenticating as a **GitHub App Installation**. This is more secure and scalable than using a Personal Access Token (PAT).
@@ -32,31 +40,7 @@ export GH_TOKEN="ghs_ExampleInstallationTokenValue"
 ---
 
 ## 3. Implementation (Python Example)
-If a token generation utility is not provided, use this logic to acquire one:
-
-```python
-import jwt
-import time
-import requests
-
-def get_gh_app_token(app_id, private_key, installation_id):
-    payload = {
-        "iat": int(time.time()) - 60,
-        "exp": int(time.time()) + (10 * 60),
-        "iss": app_id,
-    }
-    encoded_jwt = jwt.encode(payload, private_key, algorithm="RS256")
-    
-    headers = {
-        "Authorization": f"Bearer {encoded_jwt}",
-        "Accept": "application/vnd.github+json"
-    }
-    
-    url = f"https://api.github.com/app/installations/{installation_id}/access_tokens"
-    response = requests.post(url, headers=headers)
-    response.raise_for_status()
-    return response.json()["token"]
-```
+If a token generation utility is not provided, use the [auth helper](scripts/auth-helper.py) to generate one.
 
 ---
 
