@@ -25,7 +25,7 @@ To use the CLI, you must exchange the App credentials for a temporary **Installa
 
 ### Step A: Generate an Installation Access Token
 Use a script or utility to perform the handshake. The logic involves:
-1.  Creating a **JWT** signed with the `PRIVATE_KEY` (valid for 10 minutes).
+1.  Creating a **JWT** signed with the `GITHUB_PRIVATE_KEY` (valid for 10 minutes).
 2.  Calling the GitHub API to request an access token:
     `POST /app/installations/{INSTALLATION_ID}/access_tokens`
 
