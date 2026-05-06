@@ -13,10 +13,10 @@ This skill enables an agent to perform GitHub operations using the `gh` CLI by a
 ---
 
 ## 1. Prerequisites
-The agent must have access to the following environment variables or secrets:
-* `APP_ID`: The unique identifier of the GitHub App.
-* `PRIVATE_KEY`: The PEM-formatted private key for the App.
-* `INSTALLATION_ID`: The ID of the installation on the target account/repository.
+The agent must have access to the following environment variables or secrets (check for variants such as `GH_CLIENT_ID` or similar):
+* `GITHUB_CLIENT_ID`: The unique identifier of the GitHub App.
+* `GITHUB_PRIVATE_KEY`: The PEM-formatted private key for the App. Possibly on disk rather than an environment variable, in which case the path should be provided in the env var
+* `GITHUB_INSTALLATION_ID`: The ID of the installation on the target account/repository.
 
 ---
 
@@ -40,7 +40,7 @@ export GH_TOKEN="ghs_ExampleInstallationTokenValue"
 ---
 
 ## 3. Implementation (Python Example)
-If a token generation utility is not provided, use the [auth helper](scripts/auth-helper.py) to generate one.
+If a token generation utility is not provided, use the [auth helper](scripts/auth-helper.py) from this skill to generate one.
 
 ---
 
