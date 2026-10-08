@@ -1,16 +1,16 @@
 ---
-name: tradedesk-dukascopy
+name: tradedesk-marketdata
 description: This skill enables an agent to fetch new market data from dukascopy to use in backtests.
 license: MIT
 metadata:
   author: radiusred.uk
 --- 
 
-# SKILL: tradedesk-dukascopy
+# SKILL: tradedesk-marketdata
 
 ## Overview
 
-The `tradedesk-dukascopy` tool downloads raw tick data from Dukascopy's public datafeed, converts it into deterministic CSV candle files, and writes a metadata sidecar describing how the data was produced. The tool is available at [https://github.com/radiusred/tradedesk-dukascopy](https://github.com/radiusred/tradedesk-dukascopy)
+The `tradedesk-marketdata` tool (formerly `tradedesk-dukascopy`) downloads raw tick data from Dukascopy's public datafeed, converts it into deterministic CSV candle files, and writes a metadata sidecar describing how the data was produced. The tool is available at [https://github.com/radiusred/tradedesk-marketdata](https://github.com/radiusred/tradedesk-marketdata)
 
 ## When to Use This Skill
 
@@ -26,7 +26,7 @@ Use this skill when you need to:
 ### Export candles for a date range
 
 ```bash
-tradedesk-dc-export --symbols EURUSD GBPUSD \
+tradedesk-md-export --symbols EURUSD GBPUSD \
   --from 2025-01-01 --to 2025-01-31 \
   --resample 5min \
   --out data \
@@ -50,7 +50,7 @@ Key arguments:
 ### Probe mode (detect price format)
 
 ```bash
-tradedesk-dc-export --symbols GBPSEK \
+tradedesk-md-export --symbols GBPSEK \
   --from 2025-07-01 --to 2025-07-01 \
   --probe
 ```
@@ -88,14 +88,14 @@ Re-running the same export command is **idempotent** and is the intended way to 
 
 ```bash
 # First run - some hours failed due to Dukascopy rate limits
-tradedesk-dc-export --symbols EURUSD \
+tradedesk-md-export --symbols EURUSD \
   --from 2025-01-01 --to 2025-01-07 \
   --resample 5min \
   --cache-dir /path/to/marketdata \
   --price-divisor 1000
 
 # Re-run - fills in missing hours only
-tradedesk-dc-export --symbols EURUSD \
+tradedesk-md-export --symbols EURUSD \
   --from 2025-01-01 --to 2025-01-07 \
   --resample 5min \
   --cache-dir /path/to/marketdata \
@@ -146,7 +146,7 @@ The `.meta.json` sidecar contains the exact parameters used, making datasets rep
 ### Parallel export of multiple symbols
 
 ```bash
-tradedesk-dc-export --symbols EURUSD GBPUSD USDJPY \
+tradedesk-md-export --symbols EURUSD GBPUSD USDJPY \
   --from 2025-01-01 --to 2025-12-31 \
   --resample 1H \
   --out /data/2025 \
@@ -159,16 +159,16 @@ tradedesk-dc-export --symbols EURUSD GBPUSD USDJPY \
 
 ```bash
 # Month 1
-tradedesk-dc-export --symbols EURUSD --from 2025-01-01 --to 2025-01-31 --cache-dir /data/cache --price-divisor 1000
+tradedesk-md-export --symbols EURUSD --from 2025-01-01 --to 2025-01-31 --cache-dir /data/cache --price-divisor 1000
 
 # Month 2 - re-runs are instant for cached days
-tradedesk-dc-export --symbols EURUSD --from 2025-02-01 --to 2025-02-28 --cache-dir /data/cache --price-divisor 1000
+tradedesk-md-export --symbols EURUSD --from 2025-02-01 --to 2025-02-28 --cache-dir /data/cache --price-divisor 1000
 ```
 
 ## CLI Reference
 
 ```
-tradedesk-dc-export --help
+tradedesk-md-export --help
 
   --symbols SYMBOL [SYMBOL ...]  One or more symbols to export
   --from YYYY-MM-DD              Inclusive start date
