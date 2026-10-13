@@ -58,7 +58,7 @@ tags: [engineering, open-source, <product>, <topic>]
 
 ## Shape
 
-The house range is roughly 900–2,500 words. Read two recent posts on the
+Past posts run roughly 900–2,500 words; that is house practice, not a rule. Read two recent posts on the
 same site before you start. Good models:
 
 - `2026-09-26-protocol-2-1-scales-down.md` in `radiusred/codecrew-www`

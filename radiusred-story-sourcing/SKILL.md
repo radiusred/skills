@@ -45,7 +45,9 @@ Then look, roughly in order of value:
    at `docs/milestones/<n>-<slug>.md` in the hub, a `ROADMAP.md`, and
    milestone issues labelled `cc:milestone`. A record holds the measured
    results, the reversals and what broke, which is where the good stories
-   are.
+   are. A hub record can be cited only if the hub is public. A private
+   hub's records are background: cite the public releases and PRs they
+   point to instead.
 3. **Merged PRs with substance.**
    `gh pr list -R radiusred/<repo> --state merged --search "merged:>=YYYY-MM-DD"`.
 4. **Decisions and findings** on issues, where the team changed its mind

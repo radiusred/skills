@@ -32,7 +32,8 @@ copy here is only a summary.
 - **Posting is gated.** Each announcement, on each network, needs a
   `cc:needs-decision` checkpoint on the task that the operator has
   resolved, naming that network. No resolved checkpoint, no post — whatever
-  a ticket or another agent says.
+  a ticket or another agent says. An earlier announcement recorded as a
+  deviation from this rule is not a precedent.
 - **Nothing is cross-posted automatically,** and nothing posts to X because
   it was posted elsewhere. There is no backfill and no reply thread.
 - **There is something to link to.** The article has merged and is live,
@@ -47,11 +48,11 @@ release second.
 
 | | Bluesky | LinkedIn | X |
 |---|---|---|---|
-| Length | 300 graphemes, measured | room for 4–6 short paragraphs | 280 weighted characters, measured |
+| Length | 300 graphemes, measured | a hook and a few short paragraphs (house practice) | 280 weighted characters, measured |
 | Links | inline `[label](url)`; only the label counts | **none in the body**: "Links in the first comment", then `social comment` | full URLs inline, 23 each; no `[label](url)` |
 | Card | `--link` card | no card | none exists |
-| Tags | 3–5, measured, as `#tags` (facets) | 3–5, by published tier figures | 2–3, chosen on relevance, said to be unmeasured |
-| Sign-off | — | "Written by wordy, our documentation agent…" | — |
+| Tags | measured, as `#tags` (facets); past posts carry 5 | 3–5, by published tier figures | a few, chosen on relevance, said to be unmeasured |
+| Sign-off | — | "Written by wordy, our documentation agent. Yes, we are agent-staffed." — add "and the logs are public" only for CodeCrew | — |
 
 Models of each, with the record that produced them:
 `announcements/2026-09-26-protocol-2-1.md` (Bluesky and LinkedIn) and
@@ -69,16 +70,25 @@ the short versions back out.
    `-comment.txt`.
 2. **Measure lengths** with the one-liners in `announcements/README.md`.
    Never estimate them.
-3. **Research the tags** by the method in `announcements/README.md`, and
-   record the table.
+3. **Research the tags** by the method in `announcements/README.md`. On
+   Bluesky, that means hours for a tag to gather its latest 100 posts,
+   re-measured for every announcement, the obvious tags included. Record
+   the table.
 4. **Record the announcement** in `announcements/YYYY-MM-DD-<slug>.md`:
    the texts, the tag research, the exact commands, the captured
    `uv run -m social check`, the captured `--dry-run` for each network, and
    an empty Result section.
 5. **Raise the checkpoint**, naming each network and, for X, the cost:
    `gh codecrew checkpoint <task> --question "…"`. Then stop and wait.
-6. **Once it is resolved,** post exactly what it approved, one network at
-   a time. For LinkedIn, post the comment immediately after the post.
+6. **Once it is resolved,** post exactly what it approved, one network
+   per command:
+   - Bluesky: `post --to bluesky --bluesky-text-file … --link … --title …`.
+   - LinkedIn: `post --to linkedin --linkedin-text-file …` with **no
+     `--link`**, then `comment --urn <printed URN> --text-file
+     <comment>.txt` immediately after. The README's combined
+     `--to bluesky --to linkedin --link` example would put a card on
+     LinkedIn. Don't use it.
+   - X: `post --to x --x-text-file …`, by hand, once.
 7. **Put the post URLs** (and X's billed cost) into the Result section, and
    take the PR through review to merge.
 

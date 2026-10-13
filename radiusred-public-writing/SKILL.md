@@ -3,8 +3,8 @@ name: radiusred-public-writing
 description: >
   Radius Red's house voice and disclosure rules for anything published under
   its name — blog articles, social posts, release notes, README and profile
-  copy. Load it before drafting or reviewing public copy, together with
-  radiusred-blog-post or radiusred-social-post. Not for milestone documents,
+  copy. Load it before sourcing, drafting or reviewing public copy, together
+  with radiusred-story-sourcing, radiusred-blog-post or radiusred-social-post. Not for milestone documents,
   plans or other internal records, which stay plain synthesis from the record.
 license: MIT
 metadata:

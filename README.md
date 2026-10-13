@@ -15,8 +15,8 @@ from GitHub**.
 | [`radiusred-blog-post`](radiusred-blog-post/SKILL.md) | write an article for radiusred.uk or codecrew.works and land it as a PR |
 | [`radiusred-social-post`](radiusred-social-post/SKILL.md) | announce on Bluesky, LinkedIn and X through the gated `social` tool |
 
-The three writing skills assume `radiusred-public-writing` is installed
-alongside them.
+The other three writing skills assume `radiusred-public-writing` is
+installed alongside them.
 
 ## Retired
 
