@@ -1,21 +1,27 @@
 ---
 name: tradedesk-miner
-description: This skill enables an agent to mine raw statistical candidates from cached OHLCV data using the `tradedesk-miner` CLI. Streams `Finding` envelopes as NDJSON for downstream hypothesis testing.
-license: Apache-2.0
+description: >
+  Mine raw statistical candidates (anomalies, cross-instrument relationships,
+  seasonality) from a cached OHLCV candle store with the `miner` CLI, as
+  single scans or FDR-controlled sweeps, streaming NDJSON findings for
+  downstream hypothesis testing. Use when probing or sweeping cached market
+  data for effects. Don't use it to fetch or repair market data
+  (tradedesk-marketdata) or to backtest a strategy.
+license: MIT
 metadata:
   author: radiusred.uk
 ---
 
-# SKILL: tradedesk-miner
+# tradedesk-miner
 
 ## Overview
 
-The `tradedesk-miner` tool is a high-performance Rust data-mining engine for historical financial OHLCV data. It scans cached candle data (typically Dukascopy bid/ask CSVs prepared by [`tradedesk-dukascopy`](../tradedesk-dukascopy/SKILL.md)) and emits raw statistical findings as a stream of NDJSON envelopes on stdout. The tool is available at [https://github.com/radiusred/tradedesk-miner](https://github.com/radiusred/tradedesk-miner).
+The `tradedesk-miner` tool is a high-performance Rust data-mining engine for historical financial OHLCV data. It scans cached candle data (the day-file cache that `tradedesk-marketdata` builds; see the `tradedesk-marketdata` skill) and emits raw statistical findings as a stream of NDJSON envelopes on stdout. The tool is available at [https://github.com/radiusred/tradedesk-miner](https://github.com/radiusred/tradedesk-miner).
 
 It sits as the discovery layer in the RadiusRed pipeline:
 
 ```
-tradedesk-dukascopy (cache)  →  tradedesk-miner (raw findings)  →  Quant agent (hypotheses)  →  tradedesk (strategies)
+tradedesk-marketdata (cache)  →  tradedesk-miner (raw findings)  →  Quant agent (hypotheses)  →  tradedesk (strategies)
 ```
 
 Two consumption modes:
@@ -35,9 +41,9 @@ Use this skill when you need to:
 
 ## Prerequisites
 
-* **`miner` on `$PATH`** — download from the [latest GitHub Release](https://github.com/radiusred/tradedesk-miner/releases/latest) for your platform; `tar -xzf` and put `miner` in `~/.local/bin`. No Rust toolchain required.
+* **`miner` on `$PATH`** — check with `miner --version`. The public repository is being re-published and has **no releases yet**, so the README's `releases/latest` download fails. If `miner` is not already installed, build it (Rust 1.85+): clone the repo, `cargo build --release -p miner-cli`, and install `target/release/miner` to `~/.local/bin`. Never build or install mid-task without saying so on the task.
 * **A populated cache** — either:
-  * a real `tradedesk-dukascopy`-shaped cache at e.g. `/opt/tradedesk/marketdata` (see the [tradedesk-dukascopy skill](../tradedesk-dukascopy/SKILL.md)); or
+  * a real `tradedesk-marketdata` cache at e.g. `/opt/tradedesk/marketdata`; or
   * the bundled synthetic fixture cache (clone the repo, run `bash scripts/generate-fixture-cache.sh`, point `MINER_CACHE_ROOT` at `./tests/fixtures/cache`)
 * **Output discipline**: findings go to **stdout** as NDJSON; logs go to **stderr**. Never grep stderr for findings or vice versa.
 
@@ -47,7 +53,7 @@ Every invocation needs three values, resolved by `CLI flag > env var > TOML > er
 
 | Setting | CLI flag | Env var | Purpose |
 |---------|----------|---------|---------|
-| Source cache root | `--cache-root` | `MINER_CACHE_ROOT` | Where the `<SYMBOL>/<YYYY>/<MM>/<DD>_<side>.csv.zst` files live |
+| Source cache root | `--cache-root` | `MINER_CACHE_ROOT` | Where the `<SYMBOL>/<YYYY>/<MM0>/<DD>_<side>.csv.zst` files live — **`MM0` is zero-based: January is `00`** |
 | Derived-bar cache root | `--bar-cache-root` | `MINER_BAR_CACHE_ROOT` | Where miner writes aggregated bars (Arrow IPC) — created on demand |
 | Output destination | `--output` | `MINER_OUTPUT` | `stdout` (default, recommended) or a file path |
 
@@ -85,7 +91,7 @@ Key arguments:
 |----------|-------------|
 | `<scan_id@version>` | Positional, e.g. `stats.autocorr.ljung_box@1`. List via `miner scans` |
 | `--instrument SYMBOL:side` | Repeatable. Length must match the scan's `arity()`: 1 for ANOM/SEAS, 2 for CROSS |
-| `--timeframe` | `15m` / `1h` / `1d`. Drives bar aggregation |
+| `--timeframe` | `5m` / `10m` / `15m` / `1h` / `1d`. Drives bar aggregation |
 | `--window` | `START:END` half-open ISO 8601 range, UTC-only (e.g. `2024-01-01:2024-02-01`) |
 | `--params KEY=VAL` | Repeatable typed scan params (e.g. `--params lags=10 --params alpha=0.05`) |
 | `--gap-policy` | `continuous_only` (default — emit one finding per gap-free sub-range) or `strict` (one `GapAborted` if any gap) |
@@ -99,7 +105,7 @@ miner scans
 
 Prints one JSONL line per registered scan — name, version, arity, parameter JSON schema, and finding field shapes (which keys appear in `effect.extra` and `raw.series`). This is the right pre-flight to check before constructing a `scan` invocation.
 
-23 scans ship in v1 across three families: **ANOM** (single-series anomalies — Ljung-Box, ADF, KPSS, VR, ARCH-LM, JB, drawdown, outliers, vol-rolling, summary), **CROSS** (pair-arity — Pearson rolling, Spearman rolling, OLS rolling, lead-lag, Engle-Granger), **SEAS** (single-series seasonality — hour-of-day, day-of-week, session, EOM/SOM, event-window, ANOVA+Kruskal).
+The catalogue grows between versions, so **the installed binary's `miner scans` is the source of truth** — never assume a scan exists from this list. At the time of writing there are 28 scans, all `@1`, in three families: **ANOM** (`stats.*`, single-series — Ljung-Box and Ljung-Box on squares, ADF, KPSS, variance ratio, ARCH-LM, Jarque-Bera, outliers, drawdown, rolling volatility, Welford summary, returns profile, CUSUM regime break, OU half-life, time-series momentum), **CROSS** (`cross.*`, pair-arity — Pearson and Spearman rolling correlation, rolling OLS, lead-lag CCF, Engle-Granger and rolling cointegration), **SEAS** (`seas.*`, single-series — hour-of-day, day-of-week, session, end/start of month, ANOVA+Kruskal, event window, overnight gap).
 
 ### Run a sweep manifest
 
@@ -109,6 +115,7 @@ A sweep TOML expands into a cartesian product of jobs and aggregates findings un
 # sweep.toml
 [sweep]
 seed = 0xDEADBEEF                            # master seed for reproducibility
+max_jobs = 100000                            # optional ceiling (default 100_000); a bigger expansion is refused at preflight
 
 [[jobs]]
 scan = "stats.autocorr.ljung_box@1"
@@ -131,9 +138,16 @@ null        = "phase_scramble"               # or "circular_shift"
 null_n      = 999
 
 [fdr]                                        # optional — Benjamini-Hochberg false-discovery control
-family = "scan_id"                           # or "scan_only" / "instrument" / "global"
+family = "scan_id"                           # default; or "scan_family" (all stats.* / cross.* / seas.* together) or "none"
 alpha  = 0.05
 ```
+
+Manifest rules worth knowing (full schema: `docs/sweep_manifest.md` in the repo):
+
+* For a CROSS scan, `instruments` is a list of **pairs**: `instruments = [["EURUSD:bid", "GBPUSD:bid"]]`.
+* An array in `params` is a fan-out axis: `params = { lags = [5, 10] }` doubles the jobs.
+* A job may override `gap_policy` and carry its own `[jobs.hygiene]`.
+* Check the expansion first with `miner sweep sweep.toml --dry-run` (`planned_job_count`).
 
 Run it:
 
@@ -170,7 +184,7 @@ Every line on stdout is one of these `kind` values:
 |------|------|
 | `run_start` | First envelope. Carries `run_id` (ULID), `started_at_utc`, `miner_version`, `code_revision`, and the resolved request |
 | `result` | One per successful gap-free sub-range. Carries `effect` (the scan's headline metric + p-value + `extra` map), `data_slice` (sources + window + gap_manifest), `raw.series` (the underlying arrays so consumers can re-test) |
-| `scan_error` | A job failed mid-stream (data-quality / kernel error). Carries `code` and `message` |
+| `scan_error` | A job failed mid-stream (data-quality / kernel error). Carries `error_code`, `message` and `request_context` |
 | `gap_aborted` | `--gap-policy strict` and a gap was detected. Carries the `gap_manifest` |
 | `dry_run` | `--dry-run` mode — the resolved request without running the scan body |
 | `sweep_summary` | (sweep only) Aggregated FDR results across all jobs |
@@ -276,7 +290,7 @@ Global options (apply to every subcommand):
 
 scan options:
   --instrument SYMBOL:side    Repeatable; length must match scan arity
-  --timeframe 15m|1h|1d       Bar resolution
+  --timeframe 5m|10m|15m|1h|1d Bar resolution
   --window START:END          Half-open ISO 8601 window, UTC-only
   --gap-policy continuous_only|strict   Default: continuous_only
   --params KEY=VAL            Repeatable typed scan params
