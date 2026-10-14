@@ -38,10 +38,10 @@ tradedesk-md-export --help
 
 ## Export
 
-`--source` is **required**: `dukascopy` or `histdata`.
+`--source` is **required**: `dukascopy` or `histdata`
 
 ```bash
-tradedesk-md-export --source dukascopy --symbols EURUSD GBPUSD \
+tradedesk-md-export --source histdata --symbols EURUSD GBPUSD \
   --from 2025-01-01 --to 2025-01-31 \
   --resample 5min --out data \
   --cache-dir /path/to/marketdata \
